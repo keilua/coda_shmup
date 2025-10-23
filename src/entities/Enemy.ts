@@ -19,6 +19,8 @@ export default class Enemy extends Entity {
         this.addComponent(new Health(1, this));
         this.addComponent(new Movement(0.2));
         this.addComponent(new Weapon(bulletsGroup, this._bulletData));
+        this.setData('isPlayer', false);
+
 
         this.angle = 90;
 

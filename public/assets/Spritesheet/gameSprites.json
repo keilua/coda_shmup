@@ -220,6 +220,27 @@
 					}
 				},
 				{
+					"filename": "laserBlue02.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 37,
+						"h": 13
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 37,
+						"h": 13
+					},
+					"frame": {
+						"x": 108,
+						"y": 404,
+						"w": 37,
+						"h": 13
+					}
+				},
+				{
 					"filename": "star1.png",
 					"rotated": false,
 					"trimmed": false,
@@ -241,6 +262,27 @@
 					}
 				},
 				{
+					"filename": "laserRed02.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 37,
+						"h": 13
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 37,
+						"h": 13
+					},
+					"frame": {
+						"x": 145,
+						"y": 402,
+						"w": 37,
+						"h": 13
+					}
+				},
+				{
 					"filename": "star2.png",
 					"rotated": false,
 					"trimmed": false,
@@ -255,8 +297,8 @@
 						"h": 24
 					},
 					"frame": {
-						"x": 119,
-						"y": 144,
+						"x": 166,
+						"y": 378,
 						"w": 25,
 						"h": 24
 					}
@@ -277,7 +319,7 @@
 					},
 					"frame": {
 						"x": 119,
-						"y": 168,
+						"y": 144,
 						"w": 24,
 						"h": 24
 					}
