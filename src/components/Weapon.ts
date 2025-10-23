@@ -31,8 +31,18 @@ export default class Weapon implements IComponent {
             // Get forward vector of the source entity
             const sourceForward: Phaser.Math.Vector2 = new Phaser.Math.Vector2(1, 0).rotate(source.rotation);
             const bulletVelocity: Phaser.Math.Vector2 = sourceForward.clone().scale(this._bulletData.speed);
-            bullet.enable(source.x + sourceForward.x * source.arcadeBody.radius, source.y + sourceForward.y * source.arcadeBody.radius,
-                bulletVelocity.x, bulletVelocity.y, this._bulletData);
+
+            const isPlayer = !!(source as any).getData?.('isPlayer');
+            const frameName = isPlayer ? 'laserBlue02.png' : 'laserRed02.png';
+
+            bullet.enable(
+                source.x + sourceForward.x * source.arcadeBody.radius,
+                source.y + sourceForward.y * source.arcadeBody.radius,
+                bulletVelocity.x,
+                bulletVelocity.y,
+                this._bulletData,
+                frameName
+            );
 
             // Maths way
             // const forwardVectorX: number = Math.cos(source.rotation);

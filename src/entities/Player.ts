@@ -40,6 +40,7 @@ export default class Player extends Entity {
         this.addComponent(new Weapon(bulletsGroup, this._bulletData));
 
         this.addComponent(new Shield(this.scene, this));
+        this.setData('isPlayer', true);
 
         this.angle = -90;
 

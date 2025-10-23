@@ -1,27 +1,49 @@
 import {BulletData} from "../gameData/BulletData.ts";
 
-export default class Bullet extends Phaser.GameObjects.Rectangle {
+export default class Bullet extends Phaser.GameObjects.Image {
     private _arcadeBody: Phaser.Physics.Arcade.Body;
-
     private _damage: number = 0;
 
     public get damage(): number {
         return this._damage;
     }
 
+    constructor(scene: Phaser.Scene, x: number = 0, y: number = 0) {
+        super(scene, x, y, 'sprites', undefined as any);
+        scene.add.existing(this);
+    }
+
     public init() {
         this.scene.physics.add.existing(this);
-
         this._arcadeBody = this.body as Phaser.Physics.Arcade.Body;
         this._arcadeBody.allowGravity = false;
         this._arcadeBody.setFriction(0, 0);
     }
 
-    public enable(x: number, y: number, velocityX: number, velocityY: number, data: BulletData) {
+    public enable(
+        x: number,
+        y: number,
+        velocityX: number,
+        velocityY: number,
+        data: BulletData,
+        frameName?: string
+    ) {
         this.setPosition(x, y);
-        this.setSize(data.width, data.height);
+
+        this.setDisplaySize(data.width, data.height);
         this.setOrigin(0.5);
-        this.setFillStyle(data.color);
+
+        if (frameName) {
+            this.setTexture('sprites', frameName);
+            this.setScale(1);
+        }
+
+        if (!this._arcadeBody) {
+            this.scene.physics.add.existing(this);
+            this._arcadeBody = this.body as Phaser.Physics.Arcade.Body;
+            this._arcadeBody.allowGravity = false;
+            this._arcadeBody.setFriction(0, 0);
+        }
 
         this.scene.physics.world.add(this._arcadeBody);
         this.setActive(true);
@@ -31,15 +53,13 @@ export default class Bullet extends Phaser.GameObjects.Rectangle {
         this._arcadeBody.setVelocity(velocityX, velocityY);
         this._damage = data.damage;
 
-        // Rotate the bullet to face the direction it's moving
         this.setRotation(this._arcadeBody.velocity.angle());
-
-        // Maths way
-        // this.setRotation(Math.atan2(velocityY, velocityX));
     }
 
     public disable() {
-        this.scene.physics.world.disableBody(this._arcadeBody);
+        if (this._arcadeBody) {
+            this.scene.physics.world.disableBody(this._arcadeBody);
+        }
         this.setActive(false);
         this.setVisible(false);
     }
@@ -47,7 +67,7 @@ export default class Bullet extends Phaser.GameObjects.Rectangle {
     update(timeSinceLaunch: number, deltaTime: number) {
         super.update(timeSinceLaunch, deltaTime);
 
-        if (this.y > this.scene.cameras.main.height + this.displayHeight
+        if (this.y > this.scene.cameras.main.height + this.displayHeight 
             || this.y < -this.displayHeight) {
             this.disable();
         }
