@@ -1,5 +1,6 @@
 import IComponent from "./IComponent.ts";
 import Entity from "../entities/Entity.ts";
+import Shield from "../components/Shield";
 
 export default class Health extends Phaser.Events.EventEmitter implements IComponent {
     public enabled: boolean = true;
@@ -28,8 +29,13 @@ export default class Health extends Phaser.Events.EventEmitter implements ICompo
     }
 
     public damage(amount: number, emitEvents: boolean = true): void {
-        if (!this.enabled || amount <= 0) return;
-        this.adjust(-amount, emitEvents);
+        const shield = this._entity.getComponent(Shield);
+        if (shield?.isActive?.()) {
+            console.log("Bouclier actif, dégâts ignorés !");
+            return; 
+    }
+
+    this.adjust(-amount, emitEvents);
     }
 
     public heal(amount: number, emitEvents: boolean = true): void {

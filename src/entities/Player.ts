@@ -5,6 +5,8 @@ import Entity from './Entity.ts';
 import Health from "../components/Health.ts";
 import Movement from "../components/Movement.ts";
 import Weapon from "../components/Weapon.ts";
+import Shield from "../components/Shield.ts";
+
 
 export default class Player extends Entity {
     private readonly _bulletData: BulletData = {
@@ -37,6 +39,8 @@ export default class Player extends Entity {
         this.addComponent(new Movement());
         this.addComponent(new Weapon(bulletsGroup, this._bulletData));
 
+        this.addComponent(new Shield(this.scene, this));
+
         this.angle = -90;
 
         this.selectPlayerShip(1);
@@ -46,6 +50,8 @@ export default class Player extends Entity {
 
         this.getComponent(Health)?.on(Health.CHANGE_EVENT, () => {
             this.arcadeBody.setEnable(false);
+            
+            this.getComponent(Shield)?.activate(1500);
 
             this.scene.time.delayedCall(50, () => {
                 this.arcadeBody.setEnable(true);
