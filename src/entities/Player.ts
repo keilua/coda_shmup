@@ -88,8 +88,25 @@ export default class Player extends Entity {
                 this.getComponent(Movement)?.moveHorizontally(this, deltaTime);
             }
         }
+
+        //verti
+                if (this._cursorKeys.up.isDown) {
+            if (typeof (this.getComponent(Movement) as any)?.moveVertically === 'function') {
+                this.getComponent(Movement)?.moveVertically(this, -deltaTime);
+            } else {
+                this.y += -this._playerShipData.movementSpeed * deltaTime;
+            }
+        } else if (this._cursorKeys.down.isDown) {
+            if (typeof (this.getComponent(Movement) as any)?.moveVertically === 'function') {
+                this.getComponent(Movement)?.moveVertically(this, deltaTime);
+            } else {
+                this.y += this._playerShipData.movementSpeed * deltaTime;
+            }
+        }
+        
         // Stop player from going offscreen
         this.x = Phaser.Math.Clamp(this.x, this.displayWidth / 2, this.scene.cameras.main.width - this.displayWidth / 2);
+        this.y = Phaser.Math.Clamp(this.y, this.displayHeight / 2, this.scene.cameras.main.height - this.displayHeight / 2);
 
         // Press space to shoot
         if (this._cursorKeys.space.isDown) {
