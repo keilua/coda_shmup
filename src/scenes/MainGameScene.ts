@@ -26,13 +26,61 @@ export default class MainGameScene extends Scene {
         const bgMargin = 512;
         this.bg = this.add.tileSprite(this.cameras.main.centerX, this.cameras.main.centerY,
             this.cameras.main.width + bgMargin, this.cameras.main.height + bgMargin, 'bg').setTileScale(2);
-        this.planet = this.add.image(0, -512, 'planet').setOrigin(0);
+        this.planet = this.add.image(0, -512, 'planet00').setOrigin(0);
 
         if (!this.entityManager) {
             console.error('EntityManager plugin not found');
         }
 
         const player = this.entityManager.initAndSpawnPlayer();
+
+        try {
+            let playerGO: any = undefined;
+            if (!player) {
+                console.warn('player is null/undefined after spawn');
+            } else {
+                playerGO = (player as any).sprite ?? (player as any).gameObject ?? null;
+                if (!playerGO && typeof (player as any).getGameObject === 'function') {
+                    playerGO = (player as any).getGameObject();
+                }
+                if (!playerGO && (player as any).x !== undefined && (player as any).y !== undefined) {
+                    playerGO = player;
+                }
+            }
+
+            if (playerGO) {
+                const targetY = playerGO.y ?? this.cameras.main.centerY;
+                const targetX = playerGO.x ?? this.cameras.main.centerX;
+
+                const spriteHeight = (playerGO.displayHeight && playerGO.displayHeight > 0) ? playerGO.displayHeight : (playerGO.height || 64);
+                const offscreenY = this.cameras.main.height + spriteHeight + 20;
+
+                playerGO.x = this.cameras.main.centerX;
+                playerGO.y = offscreenY;
+
+                if (playerGO.body && (playerGO.body as any).enable !== undefined) {
+                    (playerGO.body as any).enable = false;
+                }
+
+                this.tweens.add({
+                    targets: playerGO,
+                    y: targetY,
+                    x: targetX, 
+                    ease: 'Sine.easeOut',
+                    duration: 800, 
+                    onComplete: () => {
+                        if (playerGO.body && (playerGO.body as any).enable !== undefined) {
+                            (playerGO.body as any).enable = true;
+                        }
+                    }
+                });
+            } else {
+                console.warn('Impossible de récupérer le GameObject du player pour l\'animation d\'entrée.');
+            }
+        } catch (e) {
+            console.error('Erreur lors de l\'animation d\'entrée du player :', e);
+        }
+
         player.getComponent(Health)?.once(Health.DEATH_EVENT, this.endGame, this);
         this.entityManager.initEnemies();
         this.entityManager.initGroupCollisions();
