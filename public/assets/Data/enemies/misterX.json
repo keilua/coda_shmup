@@ -1,0 +1,16 @@
+{
+  "health": 3,
+  "movement": {
+    "amplitude": 100,
+    "frequency": 0.8,
+    "speed": 50
+  },
+  "shoot": {
+    "delayMin": 800,
+    "delayMax": 1600
+  },
+  "spread": {
+    "count": 5,
+    "angle": 45
+  }
+}

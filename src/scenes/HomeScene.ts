@@ -7,7 +7,6 @@ export default class HomeScene extends Phaser.Scene {
     private shipTween?: Phaser.Tweens.Tween;
 
     private bg!: Phaser.GameObjects.TileSprite;
-    private planetTimer: Phaser.Time.TimerEvent;
     
     private nextPlanetIndex: number = 0;
     private readonly MAX_PLANETS = 10; 
@@ -56,6 +55,7 @@ export default class HomeScene extends Phaser.Scene {
         this.load.json('playerShips', 'Data/playerShips.json');
         this.load.audio('sfx_laser1', 'Sounds/sfx_laser1.ogg');
         this.load.audio('sfx_laser2', 'Sounds/sfx_laser2.ogg');
+        this.load.json('misterX', 'Data/enemies/misterX.json');
 
     }
 
@@ -121,8 +121,8 @@ export default class HomeScene extends Phaser.Scene {
             });
         });
 
-        this.spawnPlanet(); 
-        this.planetTimer = this.time.addEvent({
+        this.spawnPlanet();
+        this.time.addEvent({
             delay: 10000, 
             loop: true,
             callback: this.spawnPlanet,

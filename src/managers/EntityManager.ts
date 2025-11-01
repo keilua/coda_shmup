@@ -6,6 +6,7 @@ import Player from "../entities/Player.ts";
 import GroupUtils from "../utils/GroupUtils.ts";
 import GameConstants from "../GameConstants.ts";
 import RegistryConstants from "../RegistryConstants.ts";
+import MisterX from "../entities/MisterX.ts";
 
 export default class EntityManager extends Plugins.ScenePlugin {
     public static readonly PLUGIN_KEY: string = 'EntityManager';
@@ -25,6 +26,11 @@ export default class EntityManager extends Plugins.ScenePlugin {
     private _playerBullets: Physics.Arcade.Group;
     private _enemies: Physics.Arcade.Group;
     private _enemyBullets: Physics.Arcade.Group;
+    private _misterXGroup: Phaser.Physics.Arcade.Group;
+
+    private _enemySpawnTimer: Phaser.Time.TimerEvent;
+    private _misterXActive: boolean = false;
+
 
     constructor(scene: Scene, pluginManager: Plugins.PluginManager) {
         super(scene, pluginManager, EntityManager.PLUGIN_KEY);
@@ -65,10 +71,26 @@ export default class EntityManager extends Plugins.ScenePlugin {
             }
         });
 
-        // Spawn enemies indefinitely
-        this.scene!.time.addEvent({
+        this._misterXGroup = this.scene!.physics.add.group({
+            classType: MisterX,
+            defaultKey: 'sprites',
+            defaultFrame: 'ufoRed.png',
+            createCallback: (enemy) => {
+                (enemy as MisterX).init(this._enemyBullets);
+            }
+        });
+        GroupUtils.populate(8, this._misterXGroup);
+
+        this._enemySpawnTimer = this.scene!.time.addEvent({
             delay: 1500,
             callback: this.spawnEnemy,
+            callbackScope: this,
+            loop: true
+        });
+
+         this.scene!.time.addEvent({
+            delay: 5000,
+            callback: this.spawnMisterX,
             callbackScope: this,
             loop: true
         });
@@ -84,6 +106,13 @@ export default class EntityManager extends Plugins.ScenePlugin {
 
             (bullet as Bullet).disable();
             (enemy as Enemy).getComponent(Health)?.damage((bullet as Bullet).damage);
+        });
+
+        this.scene!.physics.add.overlap(this._playerBullets, this._misterXGroup, (bullet, misterX) => {
+            this.scene!.registry.inc(RegistryConstants.Keys.PLAYER_SCORE);
+
+            (bullet as Bullet).disable();
+            (misterX as MisterX).getComponent(Health)?.damage((bullet as Bullet).damage);
         });
 
         this.scene!.physics.add.overlap(this._player, this._enemyBullets, (player, bullet) => {
@@ -107,10 +136,28 @@ export default class EntityManager extends Plugins.ScenePlugin {
             return true;
         });
 
+        this.scene!.physics.add.overlap(this._player, this._misterXGroup, undefined, (player, misterX) => {
+            this.scene!.registry.inc(RegistryConstants.Keys.PLAYER_SCORE);
+
+            const enemyHealth = (misterX as MisterX).getComponent(Health);
+            enemyHealth?.damage(enemyHealth?.max);
+
+            const playerHealth = (player as Player).getComponent(Health);
+            playerHealth?.damage(1);
+
+            this.scene?.cameras.main.shake(100, 0.03);
+
+            return true;
+        });
+
         console.log("[EntityManager] Group collisions initialized");
     }
 
     private spawnEnemy() {
+        if (this._misterXActive) {
+            return;
+        }
+
         if (this._enemies.countActive(true) >= 5) {
             return;
         }
@@ -125,5 +172,51 @@ export default class EntityManager extends Plugins.ScenePlugin {
         this.game!.events.emit(GameConstants.Events.ENEMY_SPAWNED_EVENT, enemy);
 
         console.log("[EntityManager] Enemy spawned");
+    }
+
+    private spawnMisterX() {
+        if (this._misterXGroup.countActive(true) >= 1 || this._misterXActive) {
+            return;
+        }
+
+        const misterX = this._misterXGroup.get() as MisterX;
+        if (!misterX) {
+            return;
+        }
+
+        this._misterXActive = true;
+        if (this._enemySpawnTimer) {
+            this._enemySpawnTimer.paused = true;
+        }
+
+        misterX.enable(Phaser.Math.Between(64, this.scene!.cameras.main.width - 64), 0);
+
+        const health = misterX.getComponent(Health);
+        health?.once(Health.DEATH_EVENT, () => {
+            this._misterXActive = false;
+            if (this._enemySpawnTimer) {
+                this._enemySpawnTimer.paused = false;
+            }
+            console.log("[EntityManager] MisterX destroyed -> resuming enemy spawn");
+        });
+
+        const watcher = this.scene!.time.addEvent({
+            delay: 500,
+            loop: true,
+            callback: () => {
+                if (this._misterXActive && this._misterXGroup.countActive(true) === 0) {
+                    this._misterXActive = false;
+                    if (this._enemySpawnTimer) {
+                        this._enemySpawnTimer.paused = false;
+                    }
+                    watcher.remove(false);
+                    console.log("[EntityManager] MisterX no longer active (disabled) -> resuming enemy spawn");
+                }
+            }
+        });
+
+        this.game!.events.emit(GameConstants.Events.ENEMY_SPAWNED_EVENT, misterX);
+
+        console.log("[EntityManager] MisterX spawned");
     }
 }
