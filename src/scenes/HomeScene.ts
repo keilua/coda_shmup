@@ -92,7 +92,7 @@ export default class HomeScene extends Phaser.Scene {
             repeat: -1
         });
 
-        this.input.keyboard?.once('keydown-SPACE', () => {
+        const startGame = () => {
             if (!this.ship) {
                 this.scene.launch(GameConstants.SceneKeys.MAIN_UI);
                 this.scene.start(GameConstants.SceneKeys.MAIN_GAME);
@@ -119,7 +119,12 @@ export default class HomeScene extends Phaser.Scene {
                     this.scene.start(GameConstants.SceneKeys.MAIN_GAME);
                 }
             });
-        });
+        };
+
+        this.input.keyboard?.once('keydown-SPACE', startGame);
+
+        this.input.once('pointerdown', startGame);
+
 
         this.spawnPlanet();
         this.time.addEvent({

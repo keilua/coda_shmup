@@ -22,6 +22,32 @@ export default class Player extends Entity {
     private _rateOfFire: number;
     private _lastShotTime: number;
 
+    private _autoFireTimer?: Phaser.Time.TimerEvent;
+    public fireRateMs: number = 150; 
+
+    public startAutoFire(): void {
+    if (this._autoFireTimer) return;
+    if (!this.scene) return;
+
+    const fireDelayMs = this._rateOfFire * 1000;
+
+    this._autoFireTimer = this.scene.time.addEvent({
+        delay: fireDelayMs,
+        loop: true,
+        callback: () => {
+            this.getComponent(Weapon)?.shoot(this);
+            this.scene.sound.play('sfx_laser1', { volume: 0.5 });
+        }
+    });
+}
+
+
+    public stopAutoFire(): void {
+        if (!this._autoFireTimer) return;
+        this._autoFireTimer.remove(false);
+        this._autoFireTimer = undefined;
+    }
+//
     constructor(scene: Scene, x: number, y: number) {
         super(scene, x, y, 'sprites');
 
