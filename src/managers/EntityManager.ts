@@ -43,8 +43,7 @@ export default class EntityManager extends Plugins.ScenePlugin {
 
         console.log("[EntityManager] Destroyed");
     }
-
-    public initAndSpawnPlayer(): Player {
+      public initAndSpawnPlayer(): Player {
         this._playerBullets = this.scene!.physics.add.group(this.bulletGroupConfig);
         GroupUtils.populate(64, this._playerBullets);
 
@@ -54,6 +53,35 @@ export default class EntityManager extends Plugins.ScenePlugin {
         console.log("[EntityManager] Player spawned");
 
         this.game!.events.emit(GameConstants.Events.PLAYER_SPAWNED_EVENT, this._player);
+
+        const input = this.scene!.input;
+
+        input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            this._player.x = Phaser.Math.Clamp(pointer.x, this._player.displayWidth / 2, this.scene!.cameras.main.width - this._player.displayWidth / 2);
+            this._player.y = Phaser.Math.Clamp(pointer.y, this._player.displayHeight / 2, this.scene!.cameras.main.height - this._player.displayHeight / 2);
+
+            (this._player as any).setData && (this._player as any).setData('isDragging', true);
+
+            if (typeof this._player.startAutoFire === 'function') {
+                this._player.startAutoFire();
+            }
+        });
+
+        input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+            if (!pointer.isDown) return;
+            const isDragging = (this._player as any).getData ? (this._player as any).getData('isDragging') : true;
+            if (!isDragging) return;
+
+            this._player.x = Phaser.Math.Clamp(pointer.x, this._player.displayWidth / 2, this.scene!.cameras.main.width - this._player.displayWidth / 2);
+            this._player.y = Phaser.Math.Clamp(pointer.y, this._player.displayHeight / 2, this.scene!.cameras.main.height - this._player.displayHeight / 2);
+        });
+
+        input.on('pointerup', (_pointer: Phaser.Input.Pointer) => {
+            (this._player as any).setData && (this._player as any).setData('isDragging', false);
+            if (typeof this._player.stopAutoFire === 'function') {
+                this._player.stopAutoFire();
+            }
+        });
 
         return this._player;
     }

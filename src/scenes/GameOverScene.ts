@@ -18,10 +18,14 @@ export default class GameOverScene extends Phaser.Scene {
         this.add.text(screenCenterX, 72, this.registry.get(RegistryConstants.Keys.PLAYER_SCORE).toString(),
             {fontSize: '32px', color: '#fff', align: 'center'}).setOrigin(0.5);
 
-        this.add.text(screenCenterX, this.scale.height - 256, 'Press SPACE to play again',
+        this.add.text(screenCenterX, this.scale.height - 256, 'Press SPACE or TAP to play again',
             {fontSize: '32px', color: '#fff', align: 'center'}).setOrigin(0.5);
 
         this.input.keyboard?.once('keydown-SPACE', () => {
+            this.scene.start(GameConstants.SceneKeys.HOME);
+        });
+
+        this.input.once('pointerdown', () => {
             this.scene.start(GameConstants.SceneKeys.HOME);
         });
 
